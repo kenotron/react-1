@@ -1,6 +1,7 @@
 coverage:
   ignore:
     - docs/*
+    - packages/accessibility/src/behaviors/*
     - packages/react/src/themes/*
     - packages/react/src/styles/*
     - packages/react/test/*
