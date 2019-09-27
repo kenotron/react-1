@@ -13,32 +13,33 @@ const rtlKeyMap = {
 /**
  * Assigns onKeyDown handler to the slot element, based on Component's actions
  * and keys mappings defined in Accessibility behavior
- * @param {AccessibilityActionHandlers} componentActionHandlers Actions handlers defined in a component.
- * @param {KeyActions} behaviorKeyActions Mappings of actions and keys defined in Accessibility behavior.
+ * @param {AccessibilityActionHandlers} actionHandlers Actions handlers defined in a component.
+ * @param {KeyActions} behaviorActions Mappings of actions and keys defined in Accessibility behavior.
  * @param {boolean} isRtlEnabled Indicates if Left and Right arrow keys should be swapped in RTL mode.
  */
 const getKeyDownHandlers = (
-  componentActionHandlers: AccessibilityActionHandlers,
-  behaviorKeyActions: KeyActions,
+  actionHandlers: AccessibilityActionHandlers,
+  behaviorActions: KeyActions,
   isRtlEnabled?: boolean,
 ): AccessibilityKeyHandlers => {
+  const componentHandlerNames = Object.keys(actionHandlers)
   const keyHandlers = {}
 
-  if (!componentActionHandlers || !behaviorKeyActions) return keyHandlers
+  if (!actionHandlers || !behaviorActions) return keyHandlers
 
-  for (const componentPart in behaviorKeyActions) {
-    const componentPartKeyAction = behaviorKeyActions[componentPart]
-    const componentHandlers = Object.keys(componentActionHandlers)
-    const handledActions = Object.keys(componentPartKeyAction).filter(
-      actionName => componentHandlers.indexOf(actionName) !== -1,
+  for (const slotName in behaviorActions) {
+    const behaviorSlotAction = behaviorActions[slotName]
+    const handledActions = Object.keys(behaviorSlotAction).filter(
+      actionName => componentHandlerNames.indexOf(actionName) !== -1,
     )
+
     if (!handledActions.length) continue
 
     // @ts-ignore FIX ME
-    keyHandlers[componentPart] = {
+    keyHandlers[slotName] = {
       onKeyDown: (event: React.KeyboardEvent) => {
         handledActions.forEach(actionName => {
-          let keyCombinations = componentPartKeyAction[actionName].keyCombinations
+          let keyCombinations = behaviorSlotAction[actionName].keyCombinations
 
           if (isRtlEnabled) {
             keyCombinations = keyCombinations.map(keyCombination => {
@@ -51,7 +52,7 @@ const getKeyDownHandlers = (
           }
 
           if (shouldHandleOnKeys(event, keyCombinations)) {
-            componentActionHandlers[actionName](event)
+            actionHandlers[actionName](event)
           }
         })
       },
