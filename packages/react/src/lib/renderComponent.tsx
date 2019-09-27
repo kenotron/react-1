@@ -1,9 +1,9 @@
+import { FocusZoneMode, FocusZoneDefinition } from '@stardust-ui/accessibility'
 import {
-  AccessibilityDefinition,
-  FocusZoneMode,
-  FocusZoneDefinition,
-  Accessibility,
-} from '@stardust-ui/accessibility'
+  AccessibilityBehavior,
+  AccessibilityActionHandlers,
+  deprecated_getAccessibility as getAccessibility,
+} from '@stardust-ui/react-bindings'
 import cx from 'classnames'
 import * as React from 'react'
 import * as _ from 'lodash'
@@ -23,8 +23,6 @@ import {
   ComponentSlotStylesInput,
 } from '../themes/types'
 import { Props, ProviderContextPrepared } from '../types'
-import { ReactAccessibilityBehavior, AccessibilityActionHandlers } from './accessibility/reactTypes'
-import getKeyDownHandlers from './getKeyDownHandlers'
 import { emptyTheme, mergeComponentStyles, mergeComponentVariables } from './mergeThemes'
 import { FocusZoneProps, FocusZone } from './accessibility/FocusZone'
 import { FOCUSZONE_WRAP_ATTRIBUTE } from './accessibility/FocusZone/focusUtilities'
@@ -37,7 +35,7 @@ export interface RenderResultConfig<P> {
   unhandledProps: Props
   variables: ComponentVariablesObject
   styles: ComponentSlotStylesPrepared
-  accessibility: ReactAccessibilityBehavior
+  accessibility: AccessibilityBehavior
   rtl: boolean
   theme: ThemePrepared
 }
@@ -54,47 +52,6 @@ export interface RenderConfig<P> {
   actionHandlers: AccessibilityActionHandlers
   render: RenderComponentCallback<P>
   saveDebug: (debug: Debug | null) => void
-}
-
-const emptyBehavior: ReactAccessibilityBehavior = {
-  attributes: {},
-  keyHandlers: {},
-}
-
-const getAccessibility = (
-  displayName: string,
-  props: State & PropsWithVarsAndStyles & { accessibility?: Accessibility },
-  actionHandlers: AccessibilityActionHandlers,
-  isRtlEnabled: boolean,
-): ReactAccessibilityBehavior => {
-  const { accessibility } = props
-
-  if (_.isNil(accessibility)) {
-    return emptyBehavior
-  }
-
-  const definition: AccessibilityDefinition = accessibility(props)
-  const keyHandlers = getKeyDownHandlers(actionHandlers, definition.keyActions, isRtlEnabled)
-
-  if (process.env.NODE_ENV !== 'production') {
-    // For the non-production builds we enable the runtime accessibility attributes validator.
-    // We're adding the data-aa-class attribute which is being consumed by the validator, the
-    // schema is located in @stardust-ui/ability-attributes package.
-    if (definition.attributes) {
-      const slotNames = Object.keys(definition.attributes)
-      slotNames.forEach(slotName => {
-        definition.attributes[slotName]['data-aa-class'] = `${displayName}${
-          slotName === 'root' ? '' : `__${slotName}`
-        }`
-      })
-    }
-  }
-
-  return {
-    ...emptyBehavior,
-    ...definition,
-    keyHandlers,
-  }
 }
 
 /**
@@ -198,7 +155,7 @@ const renderComponent = <P extends {}>(
     { root: animationCSSProp },
   )
 
-  const accessibility: ReactAccessibilityBehavior = getAccessibility(
+  const accessibility: AccessibilityBehavior = getAccessibility(
     displayName,
     stateAndProps,
     actionHandlers,

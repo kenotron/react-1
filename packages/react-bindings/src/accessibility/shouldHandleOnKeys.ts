@@ -1,6 +1,5 @@
 import { KeyCombinations } from '@stardust-ui/accessibility'
 import * as keyboardKey from 'keyboard-key'
-import * as _ from 'lodash'
 import * as React from 'react'
 
 const isKeyModifiersMatch = (modifierValue: boolean, combinationValue?: boolean) => {
@@ -15,9 +14,8 @@ const shouldHandleOnKeys = (
   event: React.KeyboardEvent,
   keysCombinations: KeyCombinations[],
 ): boolean =>
-  _.some(
-    keysCombinations,
-    (keysCombination: KeyCombinations) =>
+  keysCombinations.some(
+    keysCombination =>
       keysCombination.keyCode === keyboardKey.getCode(event) &&
       isKeyModifiersMatch(event.altKey, keysCombination.altKey) &&
       isKeyModifiersMatch(event.shiftKey, keysCombination.shiftKey) &&

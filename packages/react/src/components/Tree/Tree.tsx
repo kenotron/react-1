@@ -27,7 +27,7 @@ import { Accessibility, treeBehavior } from '@stardust-ui/accessibility'
 import { getNextElement } from '../../lib/accessibility/FocusZone/focusUtilities'
 import { hasSubtree, removeItemAtIndex } from './lib'
 import { TreeTitleProps } from './TreeTitle'
-import { ReactAccessibilityBehavior } from '../../lib/accessibility/reactTypes'
+import { AccessibilityBehavior } from '@stardust-ui/react-bindings'
 
 export interface TreeSlotClassNames {
   item: string
@@ -261,7 +261,7 @@ class Tree extends AutoControlledComponent<WithAsProp<TreeProps>, TreeState> {
     },
   })
 
-  renderContent(accessibility: ReactAccessibilityBehavior): React.ReactElement[] {
+  renderContent(accessibility: AccessibilityBehavior): React.ReactElement[] {
     const { itemsForRender } = this.state
     const { items, renderItemTitle } = this.props
 
