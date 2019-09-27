@@ -157,9 +157,10 @@ const renderComponent = <P extends {}>(
 
   const accessibility: AccessibilityBehavior = getAccessibility(
     displayName,
+    props.accessibility,
     stateAndProps,
-    actionHandlers,
     rtl,
+    actionHandlers,
   )
 
   const unhandledProps = getUnhandledProps({ handledProps }, props)

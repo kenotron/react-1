@@ -1,5 +1,5 @@
 import { KeyActions } from '@stardust-ui/accessibility'
-import * as keyboardKey from 'keyboard-key'
+import keyboardKey from '@stardust-ui/keyboard-key'
 import * as React from 'react'
 
 import shouldHandleOnKeys from './shouldHandleOnKeys'
@@ -28,12 +28,13 @@ const getKeyDownHandlers = (
 
   for (const componentPart in behaviorKeyActions) {
     const componentPartKeyAction = behaviorKeyActions[componentPart]
-    const handledActions = _.intersection(
-      _.keys(componentPartKeyAction),
-      _.keys(componentActionHandlers),
+    const componentHandlers = Object.keys(componentActionHandlers)
+    const handledActions = Object.keys(componentPartKeyAction).filter(
+      actionName => componentHandlers.indexOf(actionName) !== -1,
     )
     if (!handledActions.length) continue
 
+    // @ts-ignore FIX ME
     keyHandlers[componentPart] = {
       onKeyDown: (event: React.KeyboardEvent) => {
         handledActions.forEach(actionName => {

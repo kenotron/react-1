@@ -8,20 +8,22 @@ const emptyBehavior: AccessibilityBehavior = {
   keyHandlers: {},
 }
 
-const getAccessibility = (
+const getAccessibility = <Props extends Record<string, any>>(
   displayName: string,
-  props: Record<string, any> & { accessibility?: Accessibility },
-  actionHandlers: AccessibilityActionHandlers,
+  behavior: Accessibility<Props>,
+  behaviorProps: Props,
   isRtlEnabled: boolean,
+  actionHandlers?: AccessibilityActionHandlers,
 ): AccessibilityBehavior => {
-  const { accessibility } = props
-
-  if (_.isNil(accessibility)) {
+  if (behavior === null || behavior === undefined) {
     return emptyBehavior
   }
 
-  const definition: AccessibilityDefinition = accessibility(props)
-  const keyHandlers = getKeyDownHandlers(actionHandlers, definition.keyActions, isRtlEnabled)
+  const definition: AccessibilityDefinition = behavior(behaviorProps)
+  const keyHandlers = definition.keyActions
+    ? // @ts-ignore FIX ME
+      getKeyDownHandlers(actionHandlers, definition.keyActions, isRtlEnabled)
+    : {}
 
   if (process.env.NODE_ENV !== 'production') {
     // For the non-production builds we enable the runtime accessibility attributes validator.
@@ -30,6 +32,7 @@ const getAccessibility = (
     if (definition.attributes) {
       const slotNames = Object.keys(definition.attributes)
       slotNames.forEach(slotName => {
+        // @ts-ignore FIX ME
         definition.attributes[slotName]['data-aa-class'] = `${displayName}${
           slotName === 'root' ? '' : `__${slotName}`
         }`
