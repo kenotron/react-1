@@ -59,7 +59,7 @@ const createInputManager: ManagerFactory<InputState, InputActions> = config =>
   });
 
 const Input: React.FC<InputProps> = () => {
-  const [state, actions] = useStateManager(createToggleManager, props, {
+  const [state, actions] = useStateManager(createToggleManager, {
     mapPropsToInitialState = () => ({ value: props.defaultValue }),
     mapPropsToState = () => ({ value: props.value })
   });
@@ -79,12 +79,9 @@ const Input: React.FC<InputProps> = () => {
 ### Reference
 
 ```tsx
-const [state, actions] = useStateManager(createToggleManager, props, {
-  autoControlledProps: ['value']
-})
+const [state, actions] = useStateManager(createToggleManager)
 const [state, actions] = useStateManager(
   managerFactory: ManagerFactory<State, Actions>, 
-  props: Props,
   options: UseStateManagerOptions<Props>,
 )
 ```
