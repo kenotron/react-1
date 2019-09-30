@@ -4,7 +4,6 @@ import {
   AccessibilityActionHandlers,
   deprecated_getAccessibility as getAccessibility,
 } from '@stardust-ui/react-bindings'
-import cx from 'classnames'
 import * as React from 'react'
 import * as _ from 'lodash'
 
@@ -17,17 +16,15 @@ import {
   ComponentVariablesObject,
   ComponentSlotClasses,
   ComponentSlotStylesPrepared,
-  PropsWithVarsAndStyles,
-  State,
   ThemePrepared,
   ComponentSlotStylesInput,
 } from '../themes/types'
 import { Props, ProviderContextPrepared } from '../types'
-import { emptyTheme, mergeComponentStyles, mergeComponentVariables } from './mergeThemes'
+import { emptyTheme } from './mergeThemes'
 import { FocusZoneProps, FocusZone } from './accessibility/FocusZone'
 import { FOCUSZONE_WRAP_ATTRIBUTE } from './accessibility/FocusZone/focusUtilities'
-import createAnimationStyles from './createAnimationStyles'
 import Debug, { isEnabled as isDebugEnabled } from './debug'
+import resolveComponentStyling from '@stardust-ui/react-bindings/src/styles/resolveComponentStyling'
 
 export interface RenderResultConfig<P> {
   ElementType: React.ElementType<P>
@@ -47,8 +44,7 @@ export interface RenderConfig<P> {
   defaultProps?: { [key: string]: any }
   displayName: string
   handledProps: string[]
-  props: PropsWithVarsAndStyles
-  state: State
+  props: Record<string, any>
   actionHandlers: AccessibilityActionHandlers
   render: RenderComponentCallback<P>
   saveDebug: (debug: Debug | null) => void
@@ -135,25 +131,8 @@ const renderComponent = <P extends {}>(
     context || {}
 
   const ElementType = getElementType({ defaultProps }, props) as React.ReactType<P>
+  const unhandledProps = getUnhandledProps({ handledProps }, props)
   const stateAndProps = { ...state, ...props }
-
-  // Resolve variables for this component, allow props.variables to override
-  const resolvedVariables: ComponentVariablesObject = mergeComponentVariables(
-    theme.componentVariables[displayName],
-    props.variables,
-  )(theme.siteVariables)
-
-  const animationCSSProp = props.animation
-    ? createAnimationStyles(props.animation, context.theme)
-    : {}
-
-  // Resolve styles using resolved variables, merge results, allow props.styles to override
-  const mergedStyles: ComponentSlotStylesPrepared = mergeComponentStyles(
-    theme.componentStyles[displayName],
-    { root: props.design },
-    { root: props.styles },
-    { root: animationCSSProp },
-  )
 
   const accessibility: AccessibilityBehavior = getAccessibility(
     displayName,
@@ -163,44 +142,22 @@ const renderComponent = <P extends {}>(
     actionHandlers,
   )
 
-  const unhandledProps = getUnhandledProps({ handledProps }, props)
-
-  const styleParam: ComponentStyleFunctionParam = {
+  const [classes, styles, variables] = resolveComponentStyling({
+    className,
     displayName,
+    disableAnimations,
     props: stateAndProps,
-    variables: resolvedVariables,
+    renderer,
     theme,
     rtl,
-    disableAnimations,
-  }
-
-  // Fela plugins rely on `direction` param in `theme` prop instead of RTL
-  // Our API should be aligned with it
-  // Heads Up! Keep in sync with Design.tsx render logic
-  const direction = rtl ? 'rtl' : 'ltr'
-  const felaParam = {
-    theme: { direction },
-  }
-
-  const resolvedStyles: ComponentSlotStylesPrepared = {}
-  const classes: ComponentSlotClasses = {}
-
-  Object.keys(mergedStyles).forEach(slotName => {
-    resolvedStyles[slotName] = callable(mergedStyles[slotName])(styleParam)
-
-    if (renderer) {
-      classes[slotName] = renderer.renderRule(callable(resolvedStyles[slotName]), felaParam)
-    }
   })
-
-  classes.root = cx(className, classes.root, props.className)
 
   const resolvedConfig: RenderResultConfig<P> = {
     ElementType,
     unhandledProps,
     classes,
-    variables: resolvedVariables,
-    styles: resolvedStyles,
+    variables,
+    styles,
     accessibility,
     rtl,
     theme,
@@ -218,7 +175,15 @@ const renderComponent = <P extends {}>(
         themes: context ? context.originalThemes : [],
         instanceStylesOverrides: props.styles,
         instanceVariablesOverrides: props.variables,
-        resolveStyles: styles => resolveStyles(styles, styleParam),
+        resolveStyles: styles =>
+          resolveStyles(styles, {
+            displayName,
+            props,
+            variables,
+            theme,
+            rtl,
+            disableAnimations,
+          }),
         resolveVariables: variables => callable(variables)(theme.siteVariables),
       }),
     )
