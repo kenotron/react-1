@@ -9,28 +9,28 @@ type UseAccessibilityBehaviorOptions<Props> = {
   mapPropsToBehavior?: () => Props
 }
 
-const enhanceElement = (
+const enhanceElement = <SlotProps extends Record<string, any>>(
   slotName: string,
-  element: React.ReactElement,
+  slotProps: SlotProps,
   definition: AccessibilityBehavior,
 ): React.ReactElement => {
   const finalProps = {
     ...definition.attributes[slotName],
-    ...element.props,
+    ...slotProps,
   }
 
   if (definition.keyHandlers[slotName]) {
     const onKeyDown = (e: React.KeyboardEvent, ...args: any[]) => {
       definition.keyHandlers[slotName].onKeyDown(e)
-      if (element.props.onKeyDown) {
-        element.props.onKeyDown(e, ...args)
+      if (slotProps.onKeyDown) {
+        slotProps.onKeyDown(e, ...args)
       }
     }
 
     finalProps.onKeyDown = onKeyDown
   }
 
-  return React.cloneElement(element, finalProps)
+  return finalProps
 }
 
 const useAccessibilityBehavior = <Props>(
@@ -49,8 +49,8 @@ const useAccessibilityBehavior = <Props>(
   )
 
   return React.useCallback(
-    (slotName: string, element: React.ReactElement) =>
-      enhanceElement(slotName, element, latestDefinition.current),
+    <SlotProps extends Record<string, any>>(slotName: string, slotProps: SlotProps) =>
+      enhanceElement(slotName, slotProps, latestDefinition.current),
     [],
   )
 }

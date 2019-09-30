@@ -36,25 +36,26 @@ type TestComponentProps = {
 }
 
 const TestComponent: React.FunctionComponent<TestComponentProps> = props => {
-  const wrap = useAccessibilityBehavior(testBehavior, {
+  const { disabled, onClick, onKeyDown } = props
+  const getProps = useAccessibilityBehavior(testBehavior, {
     mapPropsToBehavior: () => ({
-      disabled: props.disabled,
+      disabled,
     }),
     actionHandlers: {
       click: (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (props.onClick) props.onClick(e, 'root')
+        if (onClick) onClick(e, 'root')
       },
     },
   })
 
-  return wrap(
-    'root',
-    <div onKeyDown={props.onKeyDown}>
-      {wrap(
-        'img',
-        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" />,
-      )}
-    </div>,
+  return (
+    <div {...getProps('root', { onKeyDown })}>
+      <img
+        {...getProps('img', {
+          src: 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
+        })}
+      />
+    </div>
   )
 }
 
