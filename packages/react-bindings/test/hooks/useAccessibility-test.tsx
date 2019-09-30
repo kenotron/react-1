@@ -1,9 +1,9 @@
-import { shallow } from 'enzyme'
-import * as React from 'react'
-
-import useAccessibilityBehavior from '../../src/hooks/useAccessibilityBehavior'
 import { Accessibility } from '@stardust-ui/accessibility'
-import keyboardKey from '@stardust-ui/keyboard-key'
+import { useAccessibility } from '@stardust-ui/react-bindings'
+import { shallow } from 'enzyme'
+// @ts-ignore
+import * as keyboardKey from 'keyboard-key'
+import * as React from 'react'
 
 type TestBehaviorProps = {
   disabled: boolean
@@ -37,7 +37,7 @@ type TestComponentProps = {
 
 const TestComponent: React.FunctionComponent<TestComponentProps> = props => {
   const { disabled, onClick, onKeyDown } = props
-  const getProps = useAccessibilityBehavior(testBehavior, {
+  const getProps = useAccessibility(testBehavior, {
     mapPropsToBehavior: () => ({
       disabled,
     }),
@@ -59,7 +59,7 @@ const TestComponent: React.FunctionComponent<TestComponentProps> = props => {
   )
 }
 
-describe('useAccessibilityBehavior', () => {
+describe('useAccessibility', () => {
   it('sets attributes', () => {
     const wrapper = shallow(<TestComponent />)
 

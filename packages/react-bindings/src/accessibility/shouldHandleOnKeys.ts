@@ -1,5 +1,6 @@
 import { KeyCombinations } from '@stardust-ui/accessibility'
-import keyboardKey from '@stardust-ui/keyboard-key'
+// @ts-ignore
+import * as keyboardKey from 'keyboard-key'
 import * as React from 'react'
 
 const isKeyModifiersMatch = (modifierValue: boolean, combinationValue?: boolean) => {

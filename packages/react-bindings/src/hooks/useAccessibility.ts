@@ -1,4 +1,4 @@
-import { Accessibility } from '@stardust-ui/accessibility'
+import { Accessibility, AccessibilityAttributesBySlot } from '@stardust-ui/accessibility'
 import * as React from 'react'
 
 import getAccessibility from '../accessibility/getAccessibility'
@@ -6,20 +6,22 @@ import { AccessibilityBehavior, AccessibilityActionHandlers } from '../accessibi
 
 type UseAccessibilityBehaviorOptions<Props> = {
   actionHandlers?: AccessibilityActionHandlers
+  debugName?: string
   mapPropsToBehavior?: () => Props
 }
 
-const enhanceElement = <SlotProps extends Record<string, any>>(
+const mergeProps = <SlotProps extends Record<string, any>>(
   slotName: string,
   slotProps: SlotProps,
   definition: AccessibilityBehavior,
-): React.ReactElement => {
+): SlotProps & Partial<AccessibilityAttributesBySlot> => {
   const finalProps = {
     ...definition.attributes[slotName],
     ...slotProps,
   }
+  const slotHandlers = definition.keyHandlers[slotName]
 
-  if (definition.keyHandlers[slotName]) {
+  if (slotHandlers) {
     const onKeyDown = (e: React.KeyboardEvent, ...args: any[]) => {
       definition.keyHandlers[slotName].onKeyDown(e)
       if (slotProps.onKeyDown) {
@@ -33,26 +35,27 @@ const enhanceElement = <SlotProps extends Record<string, any>>(
   return finalProps
 }
 
-const useAccessibilityBehavior = <Props>(
+const useAccessibility = <Props>(
   behavior: Accessibility<Props>,
   options: UseAccessibilityBehaviorOptions<Props>,
 ) => {
-  const { actionHandlers, mapPropsToBehavior = () => ({}) } = options
-  const latestDefinition = React.useRef<AccessibilityBehavior>(null)
-
-  latestDefinition.current = getAccessibility(
-    'Foo',
+  const { actionHandlers, debugName = 'Undefined', mapPropsToBehavior = () => ({}) } = options
+  const definition = getAccessibility(
+    debugName,
     behavior,
     mapPropsToBehavior(),
     true,
     actionHandlers,
   )
 
+  const latestDefinition = React.useRef<AccessibilityBehavior>(definition)
+  latestDefinition.current = definition
+
   return React.useCallback(
     <SlotProps extends Record<string, any>>(slotName: string, slotProps: SlotProps) =>
-      enhanceElement(slotName, slotProps, latestDefinition.current),
+      mergeProps(slotName, slotProps, latestDefinition.current),
     [],
   )
 }
 
-export default useAccessibilityBehavior
+export default useAccessibility
