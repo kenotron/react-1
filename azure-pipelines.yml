@@ -1,0 +1,48 @@
+trigger: none
+pr: master
+
+jobs:
+  - job: Linux
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '8.x'
+
+      - task: geeklearningio.gl-vsts-tasks-yarn.yarn-installer-task.YarnInstaller@3
+        displayName: 'Use Yarn 1.19.x'
+        inputs:
+          versionSpec: 1.19.x
+          checkLatest: true
+          includePrerelease: false
+
+      - script: yarn
+        displayName: Install Dependencies
+
+      - script: yarn lint
+        displayName: Lint
+
+      - script: yarn prettier
+        displayName: Prettier
+
+      - script: yarn test --maxWorkers=2
+        displayName: Unit Tests
+
+      - script: bash <(curl -s https://codecov.io/bash)
+        displayName: Report coverage
+
+      - script: yarn test:e2e
+        displayName: E2E Tests
+
+      - script: yarn test:vulns
+        displayName: Vulnerability Tests
+
+      - script: yarn test:proejcts
+        displayName: Project Tests
+
+      - script: yarn test:circulars
+        displayName: Circular Dependencies Tests
+
+      - script: yarn danger ci
+        displayName: Danger JS
