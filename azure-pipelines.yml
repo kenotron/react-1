@@ -37,9 +37,6 @@ jobs:
       - script: yarn test:e2e
         displayName: E2E Tests
 
-      - script: yarn test:vulns
-        displayName: Vulnerability Tests
-
       - script: yarn test:proejcts
         displayName: Project Tests
 
