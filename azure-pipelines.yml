@@ -37,7 +37,7 @@ jobs:
       - script: yarn test:e2e
         displayName: E2E Tests
 
-      - script: yarn test:proejcts
+      - script: yarn test:projects
         displayName: Project Tests
 
       - script: yarn test:circulars
