@@ -22,9 +22,6 @@ jobs:
       - script: yarn
         displayName: Install Dependencies
 
-      - script: yarn build
-        displayName: Build
-
       - script: yarn lint
         displayName: Lint
 
